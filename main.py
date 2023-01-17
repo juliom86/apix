@@ -35,7 +35,7 @@ def validar_capicua(numero: str):
 @app.get('/get_max_duration')
 def get_max_duration(anio: int, plat: str, dtype: str):
     data = pd.read_csv(
-        'https://raw.githubusercontent.com/HX-GPosse/PI01_DATA05/main/Data_total.csv'
+        'https://raw.githubusercontent.com/juliom86/apix/blob/main/Data_total.csv'
     )
     data.duration_int = pd.to_numeric(data.duration_int, errors='coerce')
     data.release_year = pd.to_numeric(data.release_year, errors='coerce')
@@ -51,7 +51,7 @@ def get_max_duration(anio: int, plat: str, dtype: str):
 @app.get('/get_count_plataforma')
 def get_count_plataforma(plat: str):
     data = pd.read_csv(
-        'https://raw.githubusercontent.com/HX-GPosse/PI01_DATA05/main/Data_total.csv'
+        'https://raw.githubusercontent.com/juliom86/apix/blob/main/Data_total.csv'
     )
     query2 = data['plataforma'] == plat
     count_query2 = data[query2]['type'].value_counts()
@@ -66,7 +66,7 @@ def get_count_plataforma(plat: str):
 @app.get('/get_listedin')
 def get_listed_in(categoria: str):
     df = pd.read_csv(
-        'https://raw.githubusercontent.com/HX-GPosse/PI01_DATA05/main/Data_total.csv'
+        'https://raw.githubusercontent.com/juliom86/apix/blob/main/Data_total.csv'
     )
     plataforma = ""
     plats = df.plataforma.unique()
@@ -83,7 +83,7 @@ def get_listed_in(categoria: str):
 @app.get('/get_actor')
 def get_actor(plat: str, anio: int):
     data = pd.read_csv(
-        'https://raw.githubusercontent.com/HX-GPosse/PI01_DATA05/main/Data_total.csv'
+        'https://raw.githubusercontent.com/juliom86/apix/blob/main/Data_total.csv''
     )
 
     act = data[(data['plataforma'] == plat)
