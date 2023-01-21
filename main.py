@@ -1,103 +1,52 @@
 import pandas as pd
 
 from fastapi import FastAPI
+import pandas as pd
 
 app = FastAPI()
 
-
-def listaPalabrasDicFrec(listaPalabras):
-    frecuenciaPalab = [listaPalabras.count(p) for p in listaPalabras]
-    return dict(list(zip(listaPalabras, frecuenciaPalab)))
+url = 'https://raw.githubusercontent.com/juliom86/apix/main/dataset_listo.csv'
 
 
-def ordenaDicFrec(dicFrec):
-    aux = [(dicFrec[key], key) for key in dicFrec]
-    aux.sort()
-    aux.reverse()
-    return aux
+@app.get('/get_count')
+def get_count(plat: str, keyword: str):
+    df = pd.read_csv(url)
+    cant = df.loc[(df.title.str.contains(keyword)) & (df.plataforma==plat)]
+    conteo = cant.shape[0]
+    return f"En la plataforma {plat}, se menciona {conteo} la palabra {keyword}"
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.get('/get_movies')
+def get_movies(plat: str, puntaje: int, anio: int):
+    df = pd.read_csv(url)
+    cant = df.loc[(df.score > puntaje) & (df.plataforma== plat) & (df.release_year == anio)]
+    conteo = cant.shape[0]
+    return f"En la plataforma {plat}, tuvo {conteo} en {anio}, con un score mayor a {puntaje}"
 
 
-@app.get('/validar/{numero}')
-def validar_capicua(numero: str):
-    respuesta = 'No es capicua'
-
-    if numero == numero[::-1]:
-        respuesta = 'Si es capicua'
-
-    return {'numero': numero, 'validacion': respuesta}
-
-
-@app.get('/get_max_duration')
-def get_max_duration(anio: int, plat: str, dtype: str):
-    data = pd.read_csv(
-        'https://raw.githubusercontent.com/juliom86/apix/blob/main/Data_total.csv'
-    )
-    data.duration_int = pd.to_numeric(data.duration_int, errors='coerce')
-    data.release_year = pd.to_numeric(data.release_year, errors='coerce')
-    query1 = data[(data['release_year'] == anio) & (data['plataforma'] == plat)
-                  & (data['duration_type'] == dtype)]
-    query1 = query1.sort_values('duration_int', ascending=False)
-    res = query1.head(1)
-    res = res.title.to_list()
-
-    return 'El fim que mas duro fue: ', str(''.join(res))
+@app.get('/second_best_movie')
+def second_best_movie(plat: str, rating: int, tipo: str):
+    df = pd.read_csv(url)
+    seg = df.loc[(df.plataforma==plat) & (df.score == rating) & (df.type == tipo)]
+    seg2 = seg.sort_values(['title', 'score'],ascending = [True, False])
+    seg3 = seg2[['title', 'score']]
+    lista = seg3.iloc[1].to_list()
+    return f"En la plataforma {plat}, la segunda mejor pelicula {lista[0]} que tiene un rating de {lista[1]}"
 
 
-@app.get('/get_count_plataforma')
-def get_count_plataforma(plat: str):
-    data = pd.read_csv(
-        'https://raw.githubusercontent.com/juliom86/apix/blob/main/Data_total.csv'
-    )
-    query2 = data['plataforma'] == plat
-    count_query2 = data[query2]['type'].value_counts()
-
-    return {
-        'Plataforma': plat,
-        'Movies': str(count_query2[0]),
-        'Tv show': str(count_query2[1])
-    }
+@app.get('/movie_higher_duration')
+def movie_higher_duration(plat: str, anio: int, dur: str):
+    df = pd.read_csv(url)
+    film = df.loc[(df.duration_type == dur) & (df.plataforma==plat) & (df.release_year == anio)]
+    film2=film.sort_values(['duration_int'], ascending = [False])
+    film3 = film2[['title', 'duration_int', 'duration_type']]
+    lista=film3.iloc[0].to_list()
+    return f"En la plataforma {plat}, la pelicula {lista[0]}, tuvo una duracion de {lista[1]} {lista[2]}, en {anio}"
 
 
-@app.get('/get_listedin')
-def get_listed_in(categoria: str):
-    df = pd.read_csv(
-        'https://raw.githubusercontent.com/juliom86/apix/blob/main/Data_total.csv'
-    )
-    plataforma = ""
-    plats = df.plataforma.unique()
-    max = 0
-    for plat in plats:
-        if df[df.plataforma == plat].listed_in.str.count(
-                categoria).sum() > max:
-            max = df[df.plataforma == plat].listed_in.str.count(
-                categoria).sum()
-            plataforma = plat
-    return f"La plataforma con más titulos listados en el genero {categoria} es: {plataforma} con un total de {max} titulos"
-
-
-@app.get('/get_actor')
-def get_actor(plat: str, anio: int):
-    data = pd.read_csv(
-        'https://raw.githubusercontent.com/juliom86/apix/blob/main/Data_total.csv''
-    )
-
-    act = data[(data['plataforma'] == plat)
-               & (data['release_year'] == anio)].cast.str.split(',')
-    act = act.dropna()
-
-    actores_año = []
-    for actores in act:
-        for actor in actores:
-            actor = actor.rstrip()
-            actor = actor.lstrip()
-            actores_año.append(actor)
-
-    actor = listaPalabrasDicFrec(actores_año)
-    actor = ordenaDicFrec(actor)
-
-    return f'El actor que mas se repite en: {plat} en el año: {anio} es: {actor[0][1]} con un total de: {actor[0][0]} apariciones'
+@app.get('/contents')
+def contents(rat):
+    df = pd.read_csv(url)
+    cant3 = df.loc[(df.rating == rat)]
+    conteo = cant3.shape[0]
+    return f"Con el rating {rat} se tiene un total de contenido de {conteo}"

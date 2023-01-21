@@ -1,0 +1,1 @@
+{"id":"c4b01d95-7219-4c82-8ab2-d9c085cd5892","space":47523,"runtime":"python3.9","name":"apix","path":"babtjz","project":"e0uahxqb","account":"144798365827","region":"sa-east-1","deps":["pandas","fastapi"],"envs":null,"public":true,"log_level":"debug","cron":""}
